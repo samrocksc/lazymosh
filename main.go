@@ -7,6 +7,7 @@ import (
 	"lazymosh/pkg"
 	"lazymosh/screens"
 	"lazymosh/style"
+	"strings"
 
 	"github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -88,7 +89,7 @@ func (m RootModel) renderNav() string {
 	if m.width < 10 {
 		m.width = 80
 	}
-	div := style.RenderDivider(m.width)
+	div := style.RenderDivider(m.width - style.AppMargin*2)
 
 	items := []string{
 		"[L]ist",
@@ -107,7 +108,8 @@ func (m RootModel) renderNav() string {
 		Bold(true).
 		Render("lazymosh")
 
-	return div + "\n" + header + "  " + navLine + "\n" + div
+	pad := strings.Repeat(" ", style.AppMargin)
+	return pad + div + "\n" + pad + header + "  " + navLine + "\n" + pad + div
 }
 
 func main() {

@@ -94,6 +94,9 @@ func RenderDivider(width int) string {
 	return lipgloss.Style{}.Foreground(ColorBorder).Render(div)
 }
 
+// AppMargin is the horizontal padding around the TUI content
+const AppMargin = 2
+
 func Success(msg string) string { return StyleSuccess.Render("✓ ") + msg }
 func Error(msg string) string   { return StyleDanger.Render("✗ ") + msg }
 func Info(msg string) string    { return lipgloss.Style{}.Foreground(ColorPrimary).Render("ℹ ") + msg }

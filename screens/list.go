@@ -177,12 +177,13 @@ func (m ListModel) View() string {
 	if m.width < 10 {
 		m.width = 80
 	}
-	div := style.RenderDivider(m.width)
+	div := style.RenderDivider(m.width - style.AppMargin*2)
+	pad := strings.Repeat(" ", style.AppMargin)
 
 	lines := []string{
 		style.StyleHeader.Render(fmt.Sprintf("Servers (%d)", len(m.servers))),
 		div,
-		fmt.Sprintf("%-4s %-20s %-25s %-10s %-8s",
+		pad + fmt.Sprintf("%-4s %-20s %-25s %-10s %-8s",
 			style.StyleTableHeader.Render(""),
 			style.StyleTableHeader.Render("NAME"),
 			style.StyleTableHeader.Render("HOST"),
@@ -202,7 +203,7 @@ func (m ListModel) View() string {
 		if srv.Port == 0 {
 			port = "22"
 		}
-		lines = append(lines, fmt.Sprintf("%s%-20s %-25s %-10s %-8s",
+		lines = append(lines, pad+fmt.Sprintf("%s%-20s %-25s %-10s %-8s",
 			prefix,
 			rowStyle.Render(trunc(srv.Name, 20)),
 			rowStyle.Render(trunc(srv.Host, 25)),
@@ -212,17 +213,17 @@ func (m ListModel) View() string {
 	}
 
 	if len(m.servers) == 0 {
-		lines = append(lines, "", style.StyleMuted.Render("  No servers yet. Press [A] to add one."))
+		lines = append(lines, "", pad+style.StyleMuted.Render("No servers yet. Press [A] to add one."))
 	}
 
 	lines = append(lines, "")
-	lines = append(lines, style.StyleMuted.Render("  [Enter] mosh/ssh   [A] add   [E] edit   [D] delete   [Esc] quit"))
+	lines = append(lines, pad+style.StyleMuted.Render("[Enter] mosh/ssh   [A] add   [E] edit   [D] delete   [Esc] quit"))
 
 	if m.errMsg != "" {
-		lines = append(lines, "", style.Error(m.errMsg))
+		lines = append(lines, "", pad+style.Error(m.errMsg))
 	}
 	if m.successMsg != "" {
-		lines = append(lines, "", style.Success(m.successMsg))
+		lines = append(lines, "", pad+style.Success(m.successMsg))
 	}
 
 	return strings.Join(lines, "\n")
