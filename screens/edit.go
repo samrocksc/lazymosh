@@ -50,11 +50,11 @@ func (m EditModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		return m, nil
-	case SaveErrMsg:
+	case pkg.SaveErrMsg:
 		m.errMsg = msg.Err.Error()
 		m.saving = false
 		return m, nil
-	case SaveSuccessMsg:
+	case pkg.SaveSuccessMsg:
 		return m, func() tea.Msg { return pkg.ReloadMsg{} }
 	case tea.KeyMsg:
 		return m.handleKey(msg)
@@ -177,7 +177,7 @@ func (m EditModel) save() tea.Cmd {
 	return func() tea.Msg {
 		store, err := config.Load()
 		if err != nil {
-			return SaveErrMsg{Err: err}
+			return pkg.SaveErrMsg{Err: err}
 		}
 		store.Servers[m.index] = config.Server{
 			ID:       m.original.ID,
@@ -188,9 +188,9 @@ func (m EditModel) save() tea.Cmd {
 			Locality: m.localityField,
 		}
 		if err := config.Save(store); err != nil {
-			return SaveErrMsg{Err: err}
+			return pkg.SaveErrMsg{Err: err}
 		}
-		return SaveSuccessMsg{}
+		return pkg.SaveSuccessMsg{}
 	}
 }
 
@@ -199,11 +199,11 @@ func (m EditModel) deleteServer() tea.Cmd {
 	return func() tea.Msg {
 		store, err := config.Load()
 		if err != nil {
-			return SaveErrMsg{Err: err}
+			return pkg.SaveErrMsg{Err: err}
 		}
 		store.Servers = append(store.Servers[:m.index], store.Servers[m.index+1:]...)
 		if err := config.Save(store); err != nil {
-			return SaveErrMsg{Err: err}
+			return pkg.SaveErrMsg{Err: err}
 		}
 		return pkg.ReloadMsg{}
 	}

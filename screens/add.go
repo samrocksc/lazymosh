@@ -40,11 +40,11 @@ func (m AddModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		return m, nil
-	case SaveErrMsg:
+	case pkg.SaveErrMsg:
 		m.errMsg = msg.Err.Error()
 		m.saving = false
 		return m, nil
-	case SaveSuccessMsg:
+	case pkg.SaveSuccessMsg:
 		// Background save succeeded — navigate back to list so it reloads from disk
 		return m, func() tea.Msg { return pkg.NavigateMsg{Screen: pkg.ScreenList} }
 	case tea.KeyMsg:
@@ -165,14 +165,14 @@ func (m AddModel) save() tea.Cmd {
 	return func() tea.Msg {
 		store, err := config.Load()
 		if err != nil {
-			return SaveErrMsg{Err: err}
+			return pkg.SaveErrMsg{Err: err}
 		}
 		store.Servers = append(store.Servers, srv)
 		if err := config.Save(store); err != nil {
-			return SaveErrMsg{Err: err}
+			return pkg.SaveErrMsg{Err: err}
 		}
 		log.Info("saved server %q (%s@%s)", srv.Name, srv.User, srv.Host)
-		return SaveSuccessMsg{}
+		return pkg.SaveSuccessMsg{}
 	}
 }
 
@@ -239,6 +239,5 @@ func genID() string {
 	return fmt.Sprintf("%d", id)
 }
 
-// Package-local messages
-type SaveErrMsg struct{ Err error }
-type SaveSuccessMsg struct{}
+// Package-local messages — only non-re-exported types here
+// (SaveErrMsg and SaveSuccessMsg live in pkg/types.go)

@@ -71,6 +71,16 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.servers = store.Servers
 		m.screenModel = screens.NewListScreen()
 		return m, nil
+
+	case pkg.SaveSuccessMsg:
+		// Save succeeded — navigate to list so it re-reads the config from disk
+		m.currentScreen = pkg.ScreenList
+		m.screenModel = screens.NewListScreen()
+		return m, nil
+
+	case pkg.SaveErrMsg:
+		m.errMsg = msg.Err.Error()
+		return m, nil
 	}
 
 	// Pass updates to active screen
