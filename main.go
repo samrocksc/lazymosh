@@ -134,7 +134,10 @@ func main() {
 
 	log.Debug("verbosity: %s, config: %s", cfg.Verbosity, config.Path())
 
-	p := tea.NewProgram(NewRootModel())
+	p := tea.NewProgram(
+		NewRootModel(),
+		tea.WithAltScreen(), // alternate screen buffer (full terminal, hides shell beneath)
+	)
 	if err := p.Start(); err != nil {
 		log.Fatal("tea program error: %v", err)
 	}
