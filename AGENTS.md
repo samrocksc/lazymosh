@@ -52,6 +52,25 @@ lazymosh/
 - **Add** (`screenAdd`): Tab/Shift-Tab or ↑/↓ cycles focus through fields (name, host, user, port, locality). Enter on last field saves.
 - **Edit** (`screenEdit`): Same as Add but pre-filled. D triggers delete confirm.
 
+## Bug: message routing in Add/Edit screens
+
+Background commands (save, delete) return typed messages like `SaveSuccessMsg`. In bubbletea, `Update()` receives all messages — **not just the ones you explicitly handle**. If a message type has no `case` in `Update()`'s outer switch, it falls through silently.
+
+**Critical rule**: `SaveSuccessMsg`, `SaveErrMsg`, and `ReloadMsg` MUST have their own `case` in `Update()`, NOT inside `handleKey()` (which is only called from `case tea.KeyMsg:`). Putting them in `handleKey()` means they are silently dropped when fired from background goroutines.
+
+Correct pattern:
+```go
+func (m AddModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case SaveSuccessMsg:
+        return m, func() tea.Msg { return pkg.NavigateMsg{Screen: pkg.ScreenList} }
+    case tea.KeyMsg:
+        return m.handleKey(msg)
+    }
+    return m, nil
+}
+```
+
 ## Connection logic (list.go → `connect()`)
 
 1. Try `mosh user@host` — if it starts, hand off and exit
