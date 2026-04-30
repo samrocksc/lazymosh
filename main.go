@@ -1,7 +1,9 @@
 package main
 
 import (
+	"lazymosh/cli"
 	"lazymosh/config"
+	"lazymosh/log"
 	"lazymosh/pkg"
 	"lazymosh/screens"
 	"lazymosh/style"
@@ -28,6 +30,7 @@ func NewRootModel() RootModel {
 }
 
 func (m RootModel) Init() tea.Cmd {
+	log.Info("lazymosh started — config: %s", config.Path())
 	return nil
 }
 
@@ -41,6 +44,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
+			log.Info("quit")
 			return m, tea.Quit
 		}
 
@@ -57,6 +61,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case pkg.ReloadMsg:
+		log.Debug("reload: fetching server list")
 		store, err := config.Load()
 		if err != nil {
 			m.errMsg = err.Error()
@@ -106,8 +111,15 @@ func (m RootModel) renderNav() string {
 }
 
 func main() {
+	cfg, exit := cli.Parse()
+	if exit {
+		return
+	}
+
+	log.Debug("verbosity: %s, config: %s", cfg.Verbosity, config.Path())
+
 	p := tea.NewProgram(NewRootModel())
 	if err := p.Start(); err != nil {
-		panic(err)
+		log.Fatal("tea program error: %v", err)
 	}
 }

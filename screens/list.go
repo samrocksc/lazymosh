@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"lazymosh/config"
+	"lazymosh/log"
 	"lazymosh/pkg"
 	"lazymosh/style"
 
@@ -33,8 +34,10 @@ func (m ListModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		store, err := config.Load()
 		if err != nil {
+			log.Error("load servers: %v", err)
 			return LoadErrMsg{Err: err}
 		}
+		log.Info("loaded %d servers from %s", len(store.Servers), config.Path())
 		return LoadMsg{Servers: store.Servers}
 	}
 }
@@ -102,6 +105,7 @@ func (m ListModel) handleDelete() (tea.Model, tea.Cmd) {
 	if m.selected < 0 || m.selected >= len(m.servers) {
 		return m, nil
 	}
+	log.Debug("delete: index %d (%s)", m.selected, m.servers[m.selected].Name)
 	store, err := config.Load()
 	if err != nil {
 		m.errMsg = err.Error()
@@ -118,6 +122,7 @@ func (m ListModel) handleDelete() (tea.Model, tea.Cmd) {
 		m.errMsg = err.Error()
 		return m, nil
 	}
+	log.Info("deleted server (now %d remaining)", len(next))
 	m.servers = next
 	if m.selected >= len(m.servers) && m.selected > 0 {
 		m.selected--
@@ -132,6 +137,7 @@ func (m ListModel) connect(srv config.Server) tea.Cmd {
 		if srv.Port != 22 {
 			host = fmt.Sprintf("%s:%d", srv.Host, srv.Port)
 		}
+		log.Debug("connecting: mosh %s@%s", srv.User, host)
 
 		// Try mosh first
 		cmd := exec.Command("mosh", srv.User+"@"+host)
@@ -144,9 +150,11 @@ func (m ListModel) connect(srv config.Server) tea.Cmd {
 		}
 		err := cmd.Start()
 		if err == nil {
+			log.Info("mosh started — handing off (pid %d)", cmd.Process.Pid)
 			os.Exit(0)
 			return nil
 		}
+		log.Warn("mosh failed (%v), falling back to ssh", err)
 
 		// mosh failed — fall back to ssh
 		sshCmd := exec.Command("ssh", srv.User+"@"+host)

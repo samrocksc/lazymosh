@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"lazymosh/config"
+	"lazymosh/log"
 	"lazymosh/pkg"
 	"lazymosh/style"
 
@@ -159,6 +160,7 @@ func (m AddModel) save() tea.Cmd {
 		Locality: m.localityField,
 	}
 
+	log.Debug("saving new server: %s (%s@%s)", srv.Name, srv.User, srv.Host)
 	m.saving = true
 	return func() tea.Msg {
 		store, err := config.Load()
@@ -169,6 +171,7 @@ func (m AddModel) save() tea.Cmd {
 		if err := config.Save(store); err != nil {
 			return SaveErrMsg{Err: err}
 		}
+		log.Info("saved server %q (%s@%s)", srv.Name, srv.User, srv.Host)
 		return SaveSuccessMsg{}
 	}
 }
@@ -231,7 +234,9 @@ func genID() string {
 	if err != nil {
 		store = &config.Store{}
 	}
-	return fmt.Sprintf("%d", len(store.Servers)+1)
+	id := len(store.Servers) + 1
+	log.Debug("genID: store has %d servers, assigning id=%d", len(store.Servers), id)
+	return fmt.Sprintf("%d", id)
 }
 
 // Package-local messages
