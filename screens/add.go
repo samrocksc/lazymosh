@@ -21,10 +21,9 @@ type AddModel struct {
 	localityField string
 
 	focusIndex int // 0=name 1=host 2=user 3=port 4=locality
-	width      int
-	errMsg     string
-	successMsg string
-	saving     bool
+	width     int
+	errMsg    string
+	saving    bool
 }
 
 const fieldLabelWidth = 10
@@ -45,7 +44,8 @@ func (m AddModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.saving = false
 		return m, nil
 	case SaveSuccessMsg:
-		return m, func() tea.Msg { return pkg.ReloadMsg{} }
+		// Background save succeeded — navigate back to list so it reloads from disk
+		return m, func() tea.Msg { return pkg.NavigateMsg{Screen: pkg.ScreenList} }
 	case tea.KeyMsg:
 		return m.handleKey(msg)
 	}
@@ -188,7 +188,7 @@ func (m AddModel) View() string {
 		"  " + m.fieldLine("port", "Port", m.portField, 3),
 		"  " + m.fieldLine("locality", "Locality", m.localityField, 4),
 		"",
-		style.StyleMuted.Render("  [Tab/↓/↑] navigate   [Enter] next field / save   [Esc] cancel"),
+		style.StyleMuted.Render("  [Tab/↑/↓] navigate   [Enter] next field / save   [Esc] cancel"),
 		style.StyleMuted.Render("  Locality is optional (e.g. eu-berlin, us-east)"),
 	}
 
@@ -214,8 +214,8 @@ func (m AddModel) fieldLine(key, label, value string, idx int) string {
 	if idx == m.focusIndex {
 		prefix = " ▶ "
 		styleValue = lipgloss.Style{}.
-				Foreground(style.ColorPrimary).
-				Width(30)
+			Foreground(style.ColorPrimary).
+			Width(30)
 	}
 
 	return fmt.Sprintf("%s%s  %s %s",
@@ -235,6 +235,5 @@ func genID() string {
 }
 
 // Package-local messages
-type SaveMsg struct{}
 type SaveErrMsg struct{ Err error }
 type SaveSuccessMsg struct{}
