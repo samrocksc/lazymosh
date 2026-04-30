@@ -51,15 +51,17 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case pkg.NavigateMsg:
 		m.currentScreen = msg.Screen
+		var cmd tea.Cmd
 		switch msg.Screen {
 		case pkg.ScreenList:
 			m.screenModel = screens.NewListScreen()
+			cmd = m.screenModel.Init()
 		case pkg.ScreenAdd:
 			m.screenModel = screens.NewAddScreen()
 		case pkg.ScreenEdit:
 			m.screenModel = screens.NewEditScreen(msg.Server.(config.Server), msg.Index)
 		}
-		return m, nil
+		return m, cmd
 
 	case pkg.ReloadMsg:
 		log.Debug("reload: fetching server list")
@@ -70,13 +72,15 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.servers = store.Servers
 		m.screenModel = screens.NewListScreen()
-		return m, nil
+		cmd := m.screenModel.Init()
+		return m, cmd
 
 	case pkg.SaveSuccessMsg:
 		// Save succeeded — navigate to list so it re-reads the config from disk
 		m.currentScreen = pkg.ScreenList
 		m.screenModel = screens.NewListScreen()
-		return m, nil
+		cmd := m.screenModel.Init()
+		return m, cmd
 
 	case pkg.SaveErrMsg:
 		m.errMsg = msg.Err.Error()
