@@ -9,8 +9,8 @@ var (
 	ColorBackground = lipgloss.Color("#0d0d0d")
 	ColorSurface    = lipgloss.Color("#1a1a2e")
 	ColorBorder     = lipgloss.Color("#2d2d44")
-	ColorPrimary    = lipgloss.Color("#7c3aed") // violet
-	ColorAccent     = lipgloss.Color("#a78bfa") // light violet
+	ColorPrimary    = lipgloss.Color("#22c55e") // green
+	ColorAccent     = lipgloss.Color("#86efac") // light green
 	ColorSuccess    = lipgloss.Color("#34d399")
 	ColorDanger     = lipgloss.Color("#f87171")
 	ColorWarning    = lipgloss.Color("#fbbf24")
