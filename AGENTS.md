@@ -16,10 +16,14 @@ A Charm-powered TUI for launching mosh (with SSH fallback) to saved servers. No 
 lazymosh/
 ├── main.go          # tea.Program entry, RootModel
 ├── model.go         # thin stub (types moved to pkg/)
+├── cli/
+│   └── cli.go       # flag parsing: --help, --version, --file/-f, --verbosity/-V
+├── log/
+│   └── log.go       # timestamped stderr logger, levels: error/warn/info/debug
 ├── pkg/
 │   └── types.go     # Screen, NavigateMsg, ReloadMsg, ConnectErrMsg
 ├── config/
-│   └── servers.go   # Server/Store structs, Load/Save to JSON
+│   └── config.go    # Server/Store structs, Load/Save to JSON, SetPath() override
 ├── screens/
 │   ├── list.go      # server list + connect/delete
 │   ├── add.go       # add server form
@@ -28,6 +32,48 @@ lazymosh/
 │   └── style.go     # lipgloss color palette + helpers
 └── lazymosh         # compiled binary
 ```
+
+## CLI
+
+```
+lazymosh -h
+```
+
+| Flag | Description |
+|------|-------------|
+| `-h`, `--help` | show help and exit |
+| `-v`, `--version` | show version and exit |
+| `-V`, `--verbosity LEVEL` | log level: `error`, `warn`, `info`, `debug` (default: `info`) |
+| `-f`, `--file PATH` | use PATH as servers.json (default: `~/.config/lazymosh/servers.json`) |
+
+`--file` supports both `-f path` and `--file=path` syntax. `~` in PATH is expanded to `$HOME`.
+
+### Examples
+
+```bash
+lazymosh                          # normal run
+lazymosh -V debug                 # verbose logging to stderr
+lazymosh -f ~/.my-servers.json    # alternate config file
+lazymosh --file=~/servers.json    # = syntax also works
+```
+
+## Logging
+
+All output goes to stderr (stdout is reserved for the TUI). Timestamped, level-prefixed:
+
+```
+10:04:58 DEBUG using default config file: /home/sam/.config/lazymosh/servers.json
+10:04:58 DEBUG verbosity: debug, config: /home/sam/.config/lazymosh/servers.json
+10:04:58 INFO  loaded 3 servers from /home/sam/.config/lazymosh/servers.json
+10:04:58 DEBUG connecting: mosh root@1.2.3.4
+10:04:58 INFO  mosh started — handing off (pid 12345)
+```
+
+Key logged events:
+- Startup (config path resolved)
+- Server load/save/delete
+- mosh attempt + ssh fallback
+- Errors (config parse, file write, etc.)
 
 ## Config schema
 
@@ -116,7 +162,9 @@ make
 ## Running
 
 ```bash
-./lazymosh
+./lazymosh                        # normal
+lazymosh -V debug                 # verbose
+lazymosh -f ~/.servers.json       # alternate config
 ```
 
 First run creates `~/.config/lazymosh/servers.json` as an empty `{"servers":[]}`.
